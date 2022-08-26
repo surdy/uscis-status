@@ -30,7 +30,7 @@ async function run (receipt_num) {
     const status = removeTags(await page.$eval('.current-status-sec', el => el.innerText))
     //console.log(`${today}: ${status}`)
     console.log(`${status}`)
-    await page.screenshot({path: `/output/${receipt_num}.png`})
+    //await page.screenshot({path: `/output/${receipt_num}.png`})
     browser.close()
 }
 if (process.argv.length === 2) {
