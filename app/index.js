@@ -10,7 +10,7 @@ function removeTags(str) {
     }
     
  }
-async function run (reciept_num) {
+async function run (receipt_num) {
     const today = formatYmd(new Date()) 
     const browser = await puppeteer.launch({
         executablePath: 'chromium',
@@ -23,14 +23,14 @@ async function run (reciept_num) {
     const page = await browser.newPage()
     //console.log("going to URL")
     await page.goto(url)
-    await page.$eval('#receipt_number', (el,receipt) => el.value = `${receipt}`, reciept_num)
+    await page.$eval('#receipt_number', (el,receipt) => el.value = `${receipt}`, receipt_num)
     await page.click('input[type="submit"]')
     //console.log("waiting for submission to be completed.")
     await page.waitForSelector('div.current-status-sec').catch(t => console.log("Not able to load status screen"))
     const status = removeTags(await page.$eval('.current-status-sec', el => el.innerText))
     //console.log(`${today}: ${status}`)
     console.log(`${status}`)
-    await page.screenshot({path: `./screenshot/${today}_screenshot.png`})
+    await page.screenshot({path: `/output/${receipt_num}.png`})
     browser.close()
 }
 if (process.argv.length === 2) {

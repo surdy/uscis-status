@@ -1,2 +1,2 @@
 # uscis-status
-docker run -it surdy/uscis-status <receipt-number>
+```docker run --rm surdy/uscis-status <receipt-number>```
