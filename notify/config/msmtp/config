@@ -1,0 +1,12 @@
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        ~/.msmtp.log
+account        gmail
+host           smtp.gmail.com
+port           587
+from           xxxxx.yyy@gmail.com
+user           xxxxx.yyy@gmail.com
+password       afbjziwkauwjrvbn
+account default : gmail

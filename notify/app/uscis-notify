@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -o nounset
+set -o errexit
+
+CONFIG_FILE=${HOME}/.config/uscis-status-notify.yaml
+
+RECEIPT_COUNT=$(yq e ".receipts" ${CONFIG_FILE} | yq e 'length' -)
+idx=0
+while [[ $idx -lt ${RECEIPT_COUNT} ]]
+do
+    receipt_name=$(yq e ".receipts.[${idx}].name" ${CONFIG_FILE})
+    receipt_num=$(yq e ".receipts.[${idx}].number" ${CONFIG_FILE})
+    status_message_file=/output/${receipt_num}.txt
+    last_status_message_file=/output/${receipt_num}_last.txt
+    echo "Checking status for $receipt_name : $receipt_num"
+    /usr/local/bin/node /app/index "$receipt_num" > "$status_message_file"
+    subject=""
+    body=""
+    if [[ ! -f "$last_status_message_file" ]]
+    then
+       subject="Notification added for $receipt_name : $receipt_num"
+       body="Initial status for receipt is : $(cat $status_message_file)"
+    else
+        if ! cmp --silent -- "$last_status_message_file" "$status_message_file"
+        then
+            subject="Status for $receipt_name : $receipt_num has changed"
+            body="Status changed from : $(cat $last_status_message_file) to $(cat $status_message_file)"
+        fi
+    fi
+
+    if [[ ! -z "$subject" ]]
+    then
+        email_ids=$(yq e ".receipts.[${idx}].emails" ${CONFIG_FILE})
+        echo "Sending email for $receipt_name : $receipt_num -  $(cat $status_message_file)"
+	echo "$body" | mutt -a /output/${receipt_num}.png -s "$subject" -- "$email_ids"
+    else
+	echo "Status for $receipt_name : $receipt_num unchanged."
+    fi
+    mv "$status_message_file" "$last_status_message_file"
+    idx=$(( ${idx} + 1 ))
+done
