@@ -32,10 +32,11 @@ do
     then
         email_ids=$(yq e ".receipts.[${idx}].emails" ${CONFIG_FILE})
         echo "Sending email for $receipt_name : $receipt_num -  $(cat $status_message_file)"
-	echo "$body" | mutt -a /output/${receipt_num}.png -s "$subject" -- "$email_ids"
+	    echo "$body" | mutt -a /output/${receipt_num}.png -s "$subject" -- "$email_ids"
     else
 	echo "Status for $receipt_name : $receipt_num unchanged."
     fi
     mv "$status_message_file" "$last_status_message_file"
     idx=$(( ${idx} + 1 ))
+    sleep 5
 done
