@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -o nounset
 set -o errexit
 
 CONFIG_FILE=${HOME}/.config/uscis-status-notify.yaml
@@ -28,13 +27,19 @@ do
         fi
     fi
 
-    if [[ ! -z "$subject" ]]
+    if [[ -z "$subject" ]]
     then
-        email_ids=$(yq e ".receipts.[${idx}].emails" ${CONFIG_FILE})
-        echo "Sending email for $receipt_name : $receipt_num -  $(cat $status_message_file)"
-	    echo "$body" | mutt -a /output/${receipt_num}.png -s "$subject" -- "$email_ids"
+	    echo "Status for $receipt_name : $receipt_num unchanged."
     else
-	echo "Status for $receipt_name : $receipt_num unchanged."
+        cat $status_message_file
+        if  [[  -z "$email_ids" ||  "$email_ids" == "null" ]]
+        then
+            :
+        else
+            email_ids=$(yq e ".receipts.[${idx}].emails" ${CONFIG_FILE})
+            echo "Sending status update email for $receipt_name : $receipt_num"
+	        echo "$body" | mutt -a /output/${receipt_num}.png -s "$subject" -- "$email_ids"
+        fi
     fi
     mv "$status_message_file" "$last_status_message_file"
     idx=$(( ${idx} + 1 ))
