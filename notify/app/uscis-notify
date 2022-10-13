@@ -23,7 +23,9 @@ do
         if ! cmp --silent -- "$last_status_message_file" "$status_message_file"
         then
             subject="Status for $receipt_name : $receipt_num has changed"
-            body="Status changed from : $(cat $last_status_message_file) to $(cat $status_message_file)"
+            last_message=$(cat $last_status_message_file| sed 's/Your Current Status:[[:blank:]][[:blank:]]*//')
+            current_message=$(cat $status_message_file| sed 's/Your Current Status:[[:blank:]][[:blank:]]*//')
+            body="Status changed from : \"$last_message\"    to    \"$current_message\""
         fi
     fi
 
@@ -32,16 +34,17 @@ do
 	    echo "Status for $receipt_name : $receipt_num unchanged."
     else
         cat $status_message_file
+        email_ids=$(yq e ".receipts.[${idx}].emails" ${CONFIG_FILE})
         if  [[  -z "$email_ids" ||  "$email_ids" == "null" ]]
         then
             :
         else
-            email_ids=$(yq e ".receipts.[${idx}].emails" ${CONFIG_FILE})
             echo "Sending status update email for $receipt_name : $receipt_num"
 	        echo "$body" | mutt -a /output/${receipt_num}.png -s "$subject" -- "$email_ids"
         fi
     fi
     mv "$status_message_file" "$last_status_message_file"
+    email_ids=""
     idx=$(( ${idx} + 1 ))
     sleep 5
 done
