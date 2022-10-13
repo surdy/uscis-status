@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-docker run --rm -v $PWD/config:/root/.config -v $PWD/output:/output surdy/uscis-notify
+USCIS_NOTIFY_IMAGE=${USCIS_NOTIFY_IMAGE:-surdy/uscis-notify}
+
+docker run --rm -v $PWD/config:/root/.config -v $PWD/output:/output $USCIS_NOTIFY_IMAGE
